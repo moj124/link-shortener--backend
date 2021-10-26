@@ -15,7 +15,7 @@ const herokuSSLSetting = { rejectUnauthorized: false }
 const sslSetting = process.env.LOCAL ? false : herokuSSLSetting
 const dbConfig = {
   connectionString: process.env.DATABASE_URL,
-  ssl: sslSetting,
+  ssl: herokuSSLSetting,
 };
 
 const app = express();
@@ -26,9 +26,31 @@ app.use(cors()) //add CORS support to each following route handler
 const client = new Client(dbConfig);
 client.connect();
 
-app.get("/", async (req, res) => {
-  const dbres = await client.query('select * from categories');
-  res.json(dbres.rows);
+app.get("/:link", async (req, res) => {
+  const {link} = req.params;
+  try {
+    const text = "SELECT base_link FROM links WHERE new_link = $1";
+    const queried_data = await client.query(text,[link]);
+    const original_link = queried_data.rows[0].base_link;
+    res.redirect(301,original_link);
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+app.put("/", async (req, res) => {
+  const {link, originalURL} = req.body;
+  console.log(link,originalURL)
+try{
+  const text = 'INSERT INTO links(new_link, base_link) VALUES($1,$2)';
+  await client.query(text,[link,originalURL]);
+
+  res.status(201).json({
+    status: "Success"
+  });
+} catch (err) {
+  console.error(err.message);
+}
 });
 
 
