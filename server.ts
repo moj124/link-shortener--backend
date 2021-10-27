@@ -56,6 +56,21 @@ app.get("/:link", async (req, res) => {
   }
 });
 
+app.delete("/:link", async (req, res) => {
+  const {link} = req.params;
+  try{
+    const text = "DELETE FROM links WHERE new_link = $1";
+    const query = await client.query(text,[link]);
+    // console.log(link)
+
+    res.status(201).json({
+      status: "OK"
+    })
+  } catch (err) {
+    console.error(err);
+  }
+});
+
 app.put("/", async (req, res) => {
   const {link, originalURL} = req.body;
   console.log(link,originalURL)
