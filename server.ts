@@ -30,6 +30,20 @@ app.get("/", async (req, res) => {
 
 });
 
+app.get("/urls", async (req, res) => {
+  try {
+    const text = "SELECT new_link, base_link FROM links ORDER BY link_id DESC";
+    const query = await client.query(text);
+    // console.log(query.rows);
+    res.status(201).json({
+      status: 200,
+      data: query.rows
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 app.get("/:link", async (req, res) => {
   const {link} = req.params;
   try {
